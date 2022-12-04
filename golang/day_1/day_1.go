@@ -18,7 +18,7 @@ func main() {
 	re := regexp.MustCompile("\n\n")
 	elfSplit := re.Split(input, -1)
 
-	maxLoad := 0
+	elfLoads := []int{}
 	for _, v := range elfSplit {
 		re := regexp.MustCompile("\n")
 		loadSplit := re.Split(v, -1)
@@ -30,14 +30,36 @@ func main() {
 			loadSum += intV
 		}
 
-		if loadSum > maxLoad {
-			maxLoad = loadSum
-		}
+		elfLoads = append(elfLoads, loadSum)
 		loadSum = 0
 	}
 
-	fmt.Printf("total calories carried by the elf with the most calories is: %v", maxLoad)
+	topThree := []int{}
+	for _, v := range elfLoads {
 
+		if len(topThree) < 3 {
+			topThree = append(topThree, v)
+		} else {
+			if v > topThree[0] {
+				topThree[2] = topThree[1]
+				topThree[1] = topThree[0]
+				topThree[0] = v
+			} else if v > topThree[1] {
+				topThree[2] = topThree[1]
+				topThree[1] = v
+			} else if v > topThree[2] {
+				topThree[2] = v
+			}
+		}
+	}
+
+	topThreeSum := 0
+	for _, v := range topThree {
+		topThreeSum += v
+	}
+
+	fmt.Printf("total calories carried by the elf with the most calories is: %v \n", topThree[0])
+	fmt.Printf("total calories carried by the top three elves is: %v", topThreeSum)
 }
 
 // todo::dynamically auth this
