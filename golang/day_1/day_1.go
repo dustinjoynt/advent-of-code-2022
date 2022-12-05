@@ -1,20 +1,34 @@
 package main
 
 import (
-	"advent-of-code-2022/env"
+	"advent-of-code-2022/input"
 	"fmt"
-	"io"
 	"log"
-	"net/http"
-	"os"
 	"regexp"
 	"strconv"
-	"time"
 )
 
 func main() {
-	input := getInput("https://adventofcode.com/2022/day/1/input")
 
+	input, err := input.GetInput("https://adventofcode.com/2022/day/1/input")
+	if err != nil {
+		log.Fatalf("failed to get input for day one: %v", err)
+	}
+
+	elfLoads := getElfLoads(input)
+
+	topThree := getTopThreeLoads(elfLoads)
+
+	topThreeSum := 0
+	for _, v := range topThree {
+		topThreeSum += v
+	}
+
+	fmt.Printf("total calories carried by the elf with the most calories is: %v \n", topThree[0])
+	fmt.Printf("total calories carried by the top three elves is: %v", topThreeSum)
+}
+
+func getElfLoads(input string) []int {
 	re := regexp.MustCompile("\n\n")
 	elfSplit := re.Split(input, -1)
 
@@ -25,7 +39,6 @@ func main() {
 
 		loadSum := 0
 		for _, v := range loadSplit {
-
 			intV, _ := strconv.Atoi(v)
 			loadSum += intV
 		}
@@ -34,8 +47,13 @@ func main() {
 		loadSum = 0
 	}
 
+	return elfLoads
+}
+
+func getTopThreeLoads(loads []int) []int {
+
 	topThree := []int{}
-	for _, v := range elfLoads {
+	for _, v := range loads {
 
 		if len(topThree) < 3 {
 			topThree = append(topThree, v)
@@ -53,46 +71,5 @@ func main() {
 		}
 	}
 
-	topThreeSum := 0
-	for _, v := range topThree {
-		topThreeSum += v
-	}
-
-	fmt.Printf("total calories carried by the elf with the most calories is: %v \n", topThree[0])
-	fmt.Printf("total calories carried by the top three elves is: %v", topThreeSum)
-}
-
-// todo::dynamically auth this
-func getInput(link string) string {
-
-	err := env.Load("../.env")
-	if err != nil {
-		panic(err)
-	}
-	token := os.Getenv("AUTH_TOKEN")
-
-	req, _ := http.NewRequest(http.MethodGet, link, nil)
-
-	c := &http.Cookie{
-		Name:    "session",
-		Value:   token,
-		Domain:  ".adventofcode.com",
-		Path:    "/",
-		Expires: time.Now().Add(48 * time.Hour),
-	}
-	req.AddCookie(c)
-
-	client := http.Client{}
-
-	res, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	content, err := io.ReadAll(res.Body)
-	res.Body.Close()
-	if err != nil {
-		log.Fatal(err)
-	}
-	return string(content)
+	return topThree
 }

@@ -9,7 +9,7 @@ func TestLoad(t *testing.T) {
 
 	t.Run("successfully load env", func(t *testing.T) {
 
-		err := Load(".env")
+		err := Load(".test_env")
 		if err != nil {
 			t.Fatalf("failed to load env: %v", err)
 		}
