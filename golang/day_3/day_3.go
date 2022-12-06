@@ -40,7 +40,7 @@ func setPriorityValues() {
 
 func getPrioritySum(input string) int {
 	sum := 0
-	rs := getRuckSacks(input)
+	rs := getRuckSackChunks(input)
 	for _, v := range rs {
 		if len(v) > 0 {
 			sum += getPriority(v)
@@ -49,32 +49,47 @@ func getPrioritySum(input string) int {
 	return sum
 }
 
+func getRuckSackChunks(input string) [][]string {
+	var chunks [][]string
+	rs := getRuckSacks(input)
+
+	for {
+		if len(rs) < 3 {
+			break
+		}
+		chunks = append(chunks, rs[0:3])
+		rs = rs[3:]
+	}
+	return chunks
+}
+
 func getRuckSacks(input string) []string {
 	re := regexp.MustCompile("\n")
 	return re.Split(input, -1)
 }
 
-func getPriority(contents string) int {
+func getPriority(contents []string) int {
 
 	match := getDuplicate(contents)
 
 	return priorityValues[match]
 }
 
-func getDuplicate(contents string) string {
+func getDuplicate(contents []string) string {
 
-	items := strings.Split(contents, "")
+	var items [][]string
+	for _, v := range contents {
+		items = append(items, strings.Split(v, ""))
+	}
 
-	l := len(items)
-
-	ruckSack1 := items[0:(l / 2)]
-	ruckSack2 := items[(l / 2):l]
-
-	for _, v1 := range ruckSack1 {
-		for _, v2 := range ruckSack2 {
-			if v1 == v2 {
-				return v1
+	for _, v1 := range items[0] {
+		for _, v2 := range items[1] {
+			for _, v3 := range items[2] {
+				if v1 == v2 && v1 == v3 {
+					return v1
+				}
 			}
+
 		}
 	}
 	panic("no match found in rucksacks")
