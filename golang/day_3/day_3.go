@@ -69,14 +69,11 @@ func getRuckSacks(input string) []string {
 }
 
 func getPriority(contents []string) int {
-
 	match := getDuplicate(contents)
-
 	return priorityValues[match]
 }
 
 func getDuplicate(contents []string) string {
-
 	var items [][]string
 	for _, v := range contents {
 		items = append(items, strings.Split(v, ""))
