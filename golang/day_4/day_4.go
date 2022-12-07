@@ -54,7 +54,7 @@ func containsDuplicate(pairs []string) bool {
 	r1 := getRange(pairs[0])
 	r2 := getRange(pairs[1])
 
-	return sliceContains(r1, r2) || sliceContains(r2, r1)
+	return valuesOverlap(r1, r2)
 }
 
 func getRange(assignment string) []int {
@@ -72,16 +72,16 @@ func getRange(assignment string) []int {
 	return iR
 }
 
-func sliceContains(a []int, b []int) bool {
+func valuesOverlap(a []int, b []int) bool {
 
 	check := make(map[int]bool)
 	for _, v := range a {
 		check[v] = true
 	}
 	for _, v := range b {
-		if !check[v] {
-			return false
+		if check[v] {
+			return true
 		}
 	}
-	return true
+	return false
 }
