@@ -15,7 +15,7 @@ var scores = map[string]int{
 
 func main() {
 
-	input, err := input.GetInput("https://adventofcode.com/2022/day/2/input")
+	input, err := input.GetInput("2")
 	if err != nil {
 		log.Fatalf("failed to get input for day two: %v", err)
 	}
