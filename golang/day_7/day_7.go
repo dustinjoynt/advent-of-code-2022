@@ -14,6 +14,7 @@ type Dir struct {
 	parent  *Dir
 	subDirs []*Dir
 	files   []File
+	size    int
 }
 
 type File struct {
@@ -28,9 +29,30 @@ func main() {
 		log.Fatalf("failed to get input for day seven: %v", err)
 	}
 
+	var rootDir *Dir
 	fileSystem := buildFileSystem(input)
+	rootDir = fileSystem.parent
 
-	fmt.Println(fileSystem)
+	for rootDir.parent != nil {
+		rootDir = rootDir.parent
+	}
+
+	totalSize := totalDirs(0, *rootDir)
+
+	fmt.Printf("Sum of the total of all directories is: %v", totalSize)
+}
+
+func totalDirs(total int, dir Dir) int {
+	if dir.size <= 100000 {
+		total += dir.size
+	}
+
+	if len(dir.subDirs) > 0 {
+		for _, subDir := range dir.subDirs {
+			total = totalDirs(total, *subDir)
+		}
+	}
+	return total
 }
 
 func buildFileSystem(input string) *Dir {
@@ -113,6 +135,8 @@ func fillDirectory(parentDir *Dir, commands []string) []string {
 				size: size,
 			}
 			parentDir.files = append(parentDir.files, f)
+			parentDir.size += f.size
+			incrementParentDirs(parentDir, f.size)
 		}
 
 		chgDir := regexp.MustCompile(`(\$ cd)|(\$ cd)`)
@@ -139,4 +163,19 @@ func isStepInto(command string) (bool, string) {
 func isLs(command string) bool {
 	ls := regexp.MustCompile(`(\$ ls)`)
 	return ls.MatchString(command)
+}
+
+func incrementParentDirs(dir *Dir, fileSize int) {
+	loopDir := dir.parent
+
+	if dir.parent == nil {
+		return
+	}
+
+	for loopDir.parent != nil {
+		loopDir.size += fileSize
+		loopDir = loopDir.parent
+	}
+	loopDir.size += fileSize
+
 }
