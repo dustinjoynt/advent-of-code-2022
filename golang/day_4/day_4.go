@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	input, err := input.GetInput("https://adventofcode.com/2022/day/4/input")
+	input, err := input.GetInput("4")
 	if err != nil {
 		log.Fatalf("failed to get input for day four: %v", err)
 	}
