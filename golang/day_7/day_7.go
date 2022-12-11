@@ -2,6 +2,7 @@ package main
 
 import (
 	"advent-of-code-2022/input"
+	"fmt"
 	"log"
 	"regexp"
 	"strconv"
@@ -10,7 +11,8 @@ import (
 
 type Dir struct {
 	name    string
-	subDirs []Dir
+	parent  *Dir
+	subDirs []*Dir
 	files   []File
 }
 
@@ -19,11 +21,6 @@ type File struct {
 	size int
 }
 
-var fileSystem Dir
-var currentDir Dir
-var currentName string
-var commands []string
-
 func main() {
 
 	input, err := input.GetInput("7")
@@ -31,46 +28,55 @@ func main() {
 		log.Fatalf("failed to get input for day seven: %v", err)
 	}
 
-	commands = splitCommands(input)
+	fileSystem := buildFileSystem(input)
 
-	for _, cmd := range commands {
+	fmt.Println(fileSystem)
+}
+
+func buildFileSystem(input string) *Dir {
+	var currentDir *Dir
+	commands := splitCommands(input)
+
+	for len(commands) > 0 {
+
+		cmd := commands[0]
+		if cmd == "" {
+			commands = commands[1:]
+			continue
+		}
 
 		ok, currentName := isStepInto(cmd)
 		if ok {
-			currentDir = findDirectory(currentName, fileSystem)
+			if currentName == ".." {
+				parentDir := currentDir.parent
+				currentDir = parentDir
+				commands = commands[1:]
+				continue
+			}
+
+			currentDir = findDirectory(currentName, currentDir)
+			commands = commands[1:]
+			continue
 		}
 
 		if isLs(cmd) {
-			currentDir, currentName = fillDirectory(currentDir, commands)
+			commands = commands[1:]
+			newCmds := fillDirectory(currentDir, commands)
+			commands = newCmds
+			continue
 		}
-
-		addToFileSystem(currentName, currentDir)
 	}
-
-	// 	root := regexp.MustCompile(`(\$ cd /)`)
-
-	// 	if root.MatchString(cmd) {
-	// 		commands = commands[1:]
-	// 		d := Dir{
-	// 			name: "/",
-	// 		}
-	// 		currentDir = d
-	// 	}
-
-	// 	ls := regexp.MustCompile(`(\$ ls)`)
-	// 	if ls.MatchString(cmd) {
-	// 		commands = commands[1:]
-
-	// 		cd, name := fillDirectory(currentDir, commands)
-	// 		currentDir = cd
-	// 		currentName = name
-	// 	}
-	// }
-	// fmt.Printf("v", currentDir)
-	// fmt.Printf("v", currentName)
+	return currentDir
 }
 
-func findDirectory(name string, fileSystem Dir) Dir {
+func findDirectory(name string, fileSystem *Dir) *Dir {
+
+	if fileSystem == nil {
+		return &Dir{
+			parent: nil,
+			name:   name,
+		}
+	}
 
 	for k, v := range fileSystem.subDirs {
 		if v.name == name {
@@ -78,16 +84,11 @@ func findDirectory(name string, fileSystem Dir) Dir {
 		}
 		findDirectory(name, fileSystem.subDirs[k])
 	}
-	return Dir{
-		name: name,
-	}
+
+	return nil
 }
 
-func addToFileSystem(name string, currentDir Dir) {
-	fileSystem = currentDir
-}
-
-func fillDirectory(parentDir Dir, commands []string) (Dir, string) {
+func fillDirectory(parentDir *Dir, commands []string) []string {
 
 	for _, command := range commands {
 
@@ -95,8 +96,9 @@ func fillDirectory(parentDir Dir, commands []string) (Dir, string) {
 		if dir.MatchString(command) {
 			commands = commands[1:]
 			sp := strings.Split(command, " ")
-			d := Dir{
-				name: sp[1],
+			d := &Dir{
+				name:   sp[1],
+				parent: parentDir,
 			}
 			parentDir.subDirs = append(parentDir.subDirs, d)
 		}
@@ -113,15 +115,12 @@ func fillDirectory(parentDir Dir, commands []string) (Dir, string) {
 			parentDir.files = append(parentDir.files, f)
 		}
 
-		cd := regexp.MustCompile(`(\$ cd [a-z]*)`)
-		if cd.MatchString(command) {
-			commands = commands[1:]
-			newDir := regexp.MustCompile(`(\$ cd )`)
-			name := newDir.ReplaceAllString(command, "")
-			return parentDir, name
+		chgDir := regexp.MustCompile(`(\$ cd)|(\$ cd)`)
+		if chgDir.MatchString(command) {
+			break
 		}
 	}
-	return parentDir, ""
+	return commands
 }
 
 func splitCommands(input string) []string {
@@ -132,29 +131,12 @@ func splitCommands(input string) []string {
 func isStepInto(command string) (bool, string) {
 	cd := regexp.MustCompile(`(\$ cd )`)
 	if cd.MatchString(command) {
-		commands = commands[:1]
 		return true, cd.ReplaceAllString(command, "")
 	}
 	return false, ""
 }
 
-func isStepOut(command string) bool {
-	cd := regexp.MustCompile(`(\$ cd )`)
-	if cd.MatchString(command) {
-		dest := cd.ReplaceAllString(command, "")
-		if dest == ".." {
-			commands = commands[:1]
-			return true
-		}
-	}
-	return false
-}
-
 func isLs(command string) bool {
 	ls := regexp.MustCompile(`(\$ ls)`)
-	if ls.MatchString(command) {
-		commands = commands[:1]
-		return true
-	}
-	return false
+	return ls.MatchString(command)
 }
