@@ -9,6 +9,11 @@ import (
 	"strings"
 )
 
+const (
+	totalDiskSpace      = 70000000
+	updateSpaceRequired = 30000000
+)
+
 type Dir struct {
 	name    string
 	parent  *Dir
@@ -38,11 +43,14 @@ func main() {
 	}
 
 	totalSize := totalDirs(0, *rootDir)
+	sizeForDeletion := getDirSizeForDeletion(*rootDir)
 
-	fmt.Printf("Sum of the total of all directories is: %v", totalSize)
+	fmt.Printf("Sum of the total of all directories is: %v \n", totalSize)
+	fmt.Printf("Size of directory for deletion is: %v \n", sizeForDeletion)
 }
 
 func totalDirs(total int, dir Dir) int {
+
 	if dir.size <= 100000 {
 		total += dir.size
 	}
@@ -55,7 +63,38 @@ func totalDirs(total int, dir Dir) int {
 	return total
 }
 
+func getDirSizeForDeletion(rootDir Dir) int {
+
+	emptyDiskSpace := totalDiskSpace - rootDir.size
+	spaceRequired := updateSpaceRequired - emptyDiskSpace
+
+	potentialDirs := getDirsForDeletion([]Dir{}, rootDir, spaceRequired)
+
+	m := 0
+	for i, v := range potentialDirs {
+		if i == 0 || v.size < m {
+			m = v.size
+		}
+	}
+	return m
+}
+
+func getDirsForDeletion(possibleDirs []Dir, dir Dir, requiredSize int) []Dir {
+
+	if dir.size >= requiredSize {
+		possibleDirs = append(possibleDirs, dir)
+	}
+
+	if len(dir.subDirs) > 0 {
+		for _, subDir := range dir.subDirs {
+			possibleDirs = getDirsForDeletion(possibleDirs, *subDir, requiredSize)
+		}
+	}
+	return possibleDirs
+}
+
 func buildFileSystem(input string) *Dir {
+
 	var currentDir *Dir
 	commands := splitCommands(input)
 
@@ -148,11 +187,13 @@ func fillDirectory(parentDir *Dir, commands []string) []string {
 }
 
 func splitCommands(input string) []string {
+
 	re := regexp.MustCompile("\n")
 	return re.Split(input, -1)
 }
 
 func isStepInto(command string) (bool, string) {
+
 	cd := regexp.MustCompile(`(\$ cd )`)
 	if cd.MatchString(command) {
 		return true, cd.ReplaceAllString(command, "")
@@ -161,11 +202,13 @@ func isStepInto(command string) (bool, string) {
 }
 
 func isLs(command string) bool {
+
 	ls := regexp.MustCompile(`(\$ ls)`)
 	return ls.MatchString(command)
 }
 
 func incrementParentDirs(dir *Dir, fileSize int) {
+
 	loopDir := dir.parent
 
 	if dir.parent == nil {
@@ -177,5 +220,4 @@ func incrementParentDirs(dir *Dir, fileSize int) {
 		loopDir = loopDir.parent
 	}
 	loopDir.size += fileSize
-
 }
