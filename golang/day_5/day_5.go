@@ -99,14 +99,13 @@ func followMoveCommands(ship Ship, s string) Ship {
 		moveRe := regexp.MustCompile(`[0-9]+`)
 		moves := moveRe.FindAllString(cmd, -1)
 
-		mI, _ := strconv.Atoi(moves[0])
-		for i := 0; i < mI; i++ {
-			sP, _ := strconv.Atoi(moves[1])
-			eP, _ := strconv.Atoi(moves[2])
-			item := ship.position[sP][len(ship.position[sP])-1]
-			ship.position[sP] = ship.position[sP][:len(ship.position[sP])-1]
-			ship.position[eP] = append(ship.position[eP], item)
-		}
+		crateCount, _ := strconv.Atoi(moves[0])
+		sP, _ := strconv.Atoi(moves[1])
+		eP, _ := strconv.Atoi(moves[2])
+
+		cratesToMove := ship.position[sP][len(ship.position[sP])-crateCount : len(ship.position[sP])]
+		ship.position[sP] = ship.position[sP][:len(ship.position[sP])-crateCount]
+		ship.position[eP] = append(ship.position[eP], cratesToMove...)
 	}
 
 	return ship
