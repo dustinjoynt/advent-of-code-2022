@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func GetInput(link string) (string, error) {
+func GetInput(day string) (string, error) {
 
 	err := env.Load("../.env")
 	if err != nil {
@@ -17,7 +17,9 @@ func GetInput(link string) (string, error) {
 	}
 	token := os.Getenv("AUTH_TOKEN")
 
-	req, _ := http.NewRequest(http.MethodGet, link, nil)
+	url := "https://adventofcode.com/2022/day/" + day + "/input"
+
+	req, _ := http.NewRequest(http.MethodGet, url, nil)
 
 	c := &http.Cookie{
 		Name:    "session",
