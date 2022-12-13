@@ -24,9 +24,9 @@ func getPacketMarker(input string) int {
 	strSlice := strings.Split(input, "")
 
 	for i := 0; i < len(strSlice); i++ {
-		markerRange := strSlice[i : 4+i]
+		markerRange := strSlice[i : 14+i]
 		if checkForMarker(markerRange) {
-			return i + 4
+			return i + 14
 		}
 	}
 
@@ -38,5 +38,5 @@ func checkForMarker(markerRange []string) bool {
 	for _, v := range markerRange {
 		check[v] = true
 	}
-	return len(check) == 4
+	return len(check) == 14
 }
