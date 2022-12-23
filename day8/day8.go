@@ -21,7 +21,7 @@ func main() {
 
 	count := countVisibleTrees(input)
 
-	fmt.Println(count)
+	fmt.Printf("the number of visible trees is: %v", count)
 }
 
 func countVisibleTrees(input string) int {
@@ -71,9 +71,6 @@ func (m *TreeMap) isVisible(rowIndex int, columnIndex int) bool {
 
 func (m *TreeMap) isVisibleFromLeft(rowIndex int, columnIndex int) bool {
 	for i := rowIndex - 1; i >= 0; i-- {
-
-		// fmt.Printf("%v >= %v \n", m.treeMap[columnIndex][i], m.treeMap[columnIndex][rowIndex])
-
 		if m.treeMap[columnIndex][i] >= m.treeMap[columnIndex][rowIndex] {
 			return false
 		}
